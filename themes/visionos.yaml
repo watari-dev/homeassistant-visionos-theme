@@ -5,14 +5,14 @@ visionos:
       primary-background-color: rgb(84, 80, 76)
       secondary-background-color: rgb(84, 80, 76)
       app-header-background-color: rgba(84, 80, 76, 0.3)
-      ha-card-background: rgba(128, 128, 128, 0.3)
+      ha-card-background: rgba(84, 80, 76, 0.78)
       app-theme-color: rgb(122, 114, 106) # Average header color, used on the top of the browser
     dark:
       background-image: "center / cover no-repeat fixed url('https://raw.githubusercontent.com/Nezz/homeassistant-visionos-theme/1.1/themes/night.jpg')"
       primary-background-color: rgb(25, 24, 22)
       secondary-background-color: rgb(25, 24, 22)
       app-header-background-color: rgba(25, 24, 22, 0.3)
-      ha-card-background: rgba(0, 0, 0, 0.3)
+      ha-card-background: rgba(18, 18, 22, 0.78)
       app-theme-color: rgb(0, 0, 0)
   # Global
   lovelace-background: var(--background-image)
@@ -47,7 +47,7 @@ visionos:
   paper-slider-secondary-color: var(--paper-slider-knob-color)
   paper-slider-container-color: rgba(255, 255, 255, 0.5)
   paper-slider-font-color: "#000"
-  ha-slider-background: none !important
+  ha-slider-background: none
   # Labels
   label-badge-background-color: "#23232E"
   label-badge-text-color: "#F1F1F1"
@@ -57,9 +57,13 @@ visionos:
   paper-listbox-background-color: var(--primary-background-color)
   ha-card-border-radius: 20px
   paper-card-background-color: var(--ha-card-background)
-  rgb-card-background-color: rgb(10, 10, 10) # see https://github.com/basnijholt/lovelace-ios-themes/issues/60
+  rgb-card-background-color: "10, 10, 10" # see https://github.com/basnijholt/lovelace-ios-themes/issues/60
   ha-card-border-width: 0 # https://github.com/basnijholt/lovelace-ios-dark-mode-theme/issues/82#event-7732695357
-  ha-card-backdrop-filter: blur(20px)
+  # Cards scale with dashboard size. Keep their native filter off, including
+  # before card-mod loads or when a custom card does not support card-mod.
+  ha-card-backdrop-filter: none
+  # Only the header, sidebar and open dialog use live blur.
+  glass-chrome-backdrop-filter: blur(8px)
   ha-card-box-shadow: 0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.40) inset, -0.5px -0.5px 1px 0px rgba(255, 255, 255, 0.10) inset, 0px 1px 2px 0px rgba(0, 0, 0, 0.10)
   # Toggles
   paper-toggle-button-checked-button-color: "#484848"
@@ -75,12 +79,12 @@ visionos:
   switch-unchecked-track-color: var(--disabled-text-color)
   switch-unchecked-button-color: "#FFF"
   # Dialog
-  ha-dialog-surface-backdrop-filter: var(--ha-card-backdrop-filter)
+  ha-dialog-surface-backdrop-filter: var(--glass-chrome-backdrop-filter)
   dialog-box-shadow: var(--ha-card-box-shadow)
   ha-dialog-surface-background: var(--ha-card-background)
   ha-dialog-scrim-backdrop-filter: none
   # Header
-  app-header-backdrop-filter: var(--ha-card-backdrop-filter)
+  app-header-backdrop-filter: var(--glass-chrome-backdrop-filter)
   app-header-edit-background-color: rgba(0, 0, 0, 0.2)
   # Colors
   red-color: "#FF453A"
@@ -133,7 +137,7 @@ visionos:
   input-idle-line-color: var(--secondary-text-color)
   input-hover-line-color: var(--secondary-text-color)
   codemirror-property: var(--accent-color)
-  md-list-container-color: none # ha-md-list already has a card background
+  md-list-container-color: transparent # ha-md-list already has a card background
   # Dropdown
   wa-shadow-m: var(--ha-card-box-shadow)
   wa-border-radius-s: 16px
@@ -148,47 +152,31 @@ visionos:
   ha-color-fill-primary-quiet-hover: rgba(255, 255, 255, 0.2) # selection hover color
 
   card-mod-theme: "visionos"
-  card-mod-drawer-yaml: |
-    .: |
-      .mdc-drawer {
-        background-color: var(--app-header-background-color) !important;
-        backdrop-filter: var(--ha-card-backdrop-filter);
-      }
-
-      .sidebar-shell {
-        background-color: var(--app-header-background-color) !important;
-      }
-      
-    wa-drawer$: |
-      dialog {
-        backdrop-filter: var(--ha-card-backdrop-filter);
-      }
+  card-mod-drawer: |
+    .mdc-drawer,
+    .sidebar-shell,
+    wa-drawer::part(dialog) {
+      background-color: var(--app-header-background-color) !important;
+    }
   card-mod-sidebar: |
     :host {
       background: none !important;
-      backdrop-filter: var(--ha-card-backdrop-filter);
+      backdrop-filter: var(--glass-chrome-backdrop-filter);
     }
+  # Flat CSS deliberately avoids per-card shadow-tree searches/retry timers.
+  # Sliders keep Home Assistant's native shape and behavior.
   card-mod-card: |
-    ha-card {
-      backdrop-filter: unset !important;
-    }
-    ha-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: transparent;
-      backdrop-filter: var(--ha-card-backdrop-filter);
-      z-index: -1;
-      pointer-events: none;
-      border-radius: inherit;
-      box-shadow: var(--ha-card-box-shadow);
-    }
-    :host(hui-heading-card) ha-card {
+    :host(hui-heading-card) ha-card,
+    ha-card.text-only,
+    :host(mushroom-title-card) ha-card,
+    :host(mushroom-chips-card) ha-card {
       background: none !important;
       backdrop-filter: none !important;
+      box-shadow: none !important;
     }
-    :host(hui-heading-card) ha-card::before {
-      content: none !important;
+
+    ha-card.text-only {
+      overflow: visible;
     }
 
     /* Energy dashboard */
@@ -197,35 +185,4 @@ visionos:
     .mdc-data-table__header-cell,
     ha-sankey-chart {
       background: none !important;
-    }
-
-    /* Markdown card with text_only */
-    ha-card.text-only {
-      background: none !important;
-      backdrop-filter: none !important;
-      overflow: visible;
-    }
-    ha-card.text-only::before {
-      content: none !important;
-    }
-
-    /* Mushroom title card */
-    :host(mushroom-title-card) ha-card {
-      background: none !important;
-      backdrop-filter: none !important;
-    }
-    :host(mushroom-title-card) ha-card::before {
-      content: none !important;
-    }
-
-    /* Mushroom chips card */
-    :host(mushroom-chips-card) ha-card {
-      background: none !important;
-      backdrop-filter: none !important;
-      box-shadow: none !important;
-    }
-    :host(mushroom-chips-card) ha-card::before {
-      content: none !important;
-      background: none !important;
-      backdrop-filter: none !important;
     }

@@ -5,14 +5,14 @@ Liquid Glass:
       primary-background-color: rgb(76, 80, 84)
       secondary-background-color: rgb(76, 80, 84)
       app-header-background-color: rgba(76, 80, 84, 0.3)
-      ha-card-background: rgba(150, 150, 150, 0.3)
+      ha-card-background: rgba(76, 80, 84, 0.78)
       app-theme-color: rgb(91, 138, 168) # Average header color, used on the top of the browser
     dark:
       background-image: "center / cover no-repeat fixed url('https://raw.githubusercontent.com/Nezz/homeassistant-visionos-theme/refs/heads/static/macOS_26_Dark.webp')"
       primary-background-color: rgb(18, 11, 25)
       secondary-background-color: rgb(18, 11, 25)
       app-header-background-color: rgba(18, 11, 25, 0.3)
-      ha-card-background: rgba(0, 0, 0, 0.3)
+      ha-card-background: rgba(18, 18, 22, 0.78)
       app-theme-color: rgb(0, 0, 0)
   # Global
   lovelace-background: var(--background-image)
@@ -47,7 +47,7 @@ Liquid Glass:
   paper-slider-secondary-color: var(--paper-slider-knob-color)
   paper-slider-container-color: rgba(255, 255, 255, 0.5)
   paper-slider-font-color: "#000"
-  ha-slider-background: none !important
+  ha-slider-background: none
   # Labels
   label-badge-background-color: "#23232E"
   label-badge-text-color: "#F1F1F1"
@@ -58,9 +58,13 @@ Liquid Glass:
   ha-card-border-radius: 34px
   ha-card-features-border-radius: var(--ha-card-border-radius)
   paper-card-background-color: var(--ha-card-background)
-  rgb-card-background-color: rgb(10, 10, 10) # see https://github.com/basnijholt/lovelace-ios-themes/issues/60
+  rgb-card-background-color: "10, 10, 10" # see https://github.com/basnijholt/lovelace-ios-themes/issues/60
   ha-card-border-width: 0 # https://github.com/basnijholt/lovelace-ios-dark-mode-theme/issues/82#event-7732695357
-  ha-card-backdrop-filter: blur(8px)
+  # Cards scale with dashboard size. Keep their native filter off, including
+  # before card-mod loads or when a custom card does not support card-mod.
+  ha-card-backdrop-filter: none
+  # Only the header, sidebar and open dialog use live blur.
+  glass-chrome-backdrop-filter: blur(8px)
   ha-card-box-shadow: >
     3px 3px 0.5px -3.5px rgba(255, 255, 255, 0.30) inset, -2px -2px 0.5px -2px rgba(255, 255, 255, 0.30) inset, 0 0 8px 1px rgba(255, 255, 255, 0.10) inset, 0 0 2px 0 rgba(0, 0, 0, 0.10)
   # Toggles
@@ -77,12 +81,12 @@ Liquid Glass:
   switch-unchecked-track-color: var(--disabled-text-color)
   switch-unchecked-button-color: "#FFF"
   # Dialog
-  ha-dialog-surface-backdrop-filter: var(--ha-card-backdrop-filter)
+  ha-dialog-surface-backdrop-filter: var(--glass-chrome-backdrop-filter)
   dialog-box-shadow: var(--ha-card-box-shadow)
   ha-dialog-surface-background: var(--ha-card-background)
   ha-dialog-scrim-backdrop-filter: none
   # Header
-  app-header-backdrop-filter: var(--ha-card-backdrop-filter)
+  app-header-backdrop-filter: var(--glass-chrome-backdrop-filter)
   app-header-edit-background-color: rgba(0, 0, 0, 0.2)
   # Colors
   red-color: "#FF453A"
@@ -135,7 +139,7 @@ Liquid Glass:
   input-idle-line-color: var(--secondary-text-color)
   input-hover-line-color: var(--secondary-text-color)
   codemirror-property: var(--accent-color)
-  md-list-container-color: none # ha-md-list already has a card background
+  md-list-container-color: transparent # ha-md-list already has a card background
   # Dropdown
   wa-shadow-m: var(--ha-card-box-shadow)
   wa-border-radius-s: var(--ha-card-border-radius)
@@ -150,25 +154,16 @@ Liquid Glass:
   ha-color-fill-primary-quiet-hover: rgba(255, 255, 255, 0.2) # selection hover color
 
   card-mod-theme: "Liquid Glass"
-  card-mod-drawer-yaml: |
-    .: |
-      .mdc-drawer {
-        background-color: var(--app-header-background-color) !important;
-        backdrop-filter: var(--ha-card-backdrop-filter);
-      }
-
-      .sidebar-shell {
-        background-color: var(--app-header-background-color) !important;
-      }
-      
-    wa-drawer$: |
-      dialog {
-        backdrop-filter: var(--ha-card-backdrop-filter);
-      }
+  card-mod-drawer: |
+    .mdc-drawer,
+    .sidebar-shell,
+    wa-drawer::part(dialog) {
+      background-color: var(--app-header-background-color) !important;
+    }
   card-mod-sidebar: |
     :host {
       background: none !important;
-      backdrop-filter: var(--ha-card-backdrop-filter);
+      backdrop-filter: var(--glass-chrome-backdrop-filter);
     }
 
     ha-list-item-button,
@@ -181,92 +176,26 @@ Liquid Glass:
     ha-md-list-item.selected::before {
       border-radius: var(--ha-card-border-radius) !important;
     }
-  card-mod-card-yaml: |
-    .: |
-      ha-card {
-        backdrop-filter: unset !important;
-      }
-      ha-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        backdrop-filter: var(--ha-card-backdrop-filter);
-        z-index: -1;
-        pointer-events: none;
-        border-radius: inherit;
-        box-shadow: var(--ha-card-box-shadow);
-      }
-      :host(hui-heading-card) ha-card {
-        background: none !important;
-        backdrop-filter: none !important;
-      }
-      :host(hui-heading-card) ha-card::before {
-        content: none !important;
-      }
+  # Flat CSS deliberately avoids per-card shadow-tree searches/retry timers.
+  # Sliders keep Home Assistant's native shape and behavior.
+  card-mod-card: |
+    :host(hui-heading-card) ha-card,
+    ha-card.text-only,
+    :host(mushroom-title-card) ha-card,
+    :host(mushroom-chips-card) ha-card {
+      background: none !important;
+      backdrop-filter: none !important;
+      box-shadow: none !important;
+    }
 
-      /* Energy dashboard */
-      .mdc-data-table,
-      .mdc-data-table__row,
-      .mdc-data-table__header-cell,
-      ha-sankey-chart {
-        background: none !important;
-      }
+    ha-card.text-only {
+      overflow: visible;
+    }
 
-      /* Markdown card with text_only */
-      ha-card.text-only {
-        background: none !important;
-        backdrop-filter: none !important;
-        overflow: visible;
-      }
-      ha-card.text-only::before {
-        content: none !important;
-      }
-
-      /* Mushroom title card */
-      :host(mushroom-title-card) ha-card {
-        background: none !important;
-        backdrop-filter: none !important;
-      }
-      :host(mushroom-title-card) ha-card::before {
-        content: none !important;
-      }
-
-      /* Mushroom chips card */
-      :host(mushroom-chips-card) ha-card {
-        background: none !important;
-        backdrop-filter: none !important;
-        box-shadow: none !important;
-      }
-      :host(mushroom-chips-card) ha-card::before {
-        content: none !important;
-        background: none !important;
-        backdrop-filter: none !important;
-      }
-
-    hui-card-features $:
-      hui-card-feature $:
-        hui-target-humidity-card-feature $:
-          ha-control-slider$: |
-            .slider .slider-track-bar {
-              border-radius: 0px !important;
-            }
-        service-call $:
-          custom-feature-slider $: |
-            .default .thumb {
-              border-radius: 0px !important;
-            }
-        hui-cover-position-card-feature $:
-          ha-control-slider$: |
-            .slider .slider-track-bar {
-              border-radius: 0px !important;
-            }
-        hui-cover-tilt-position-card-feature $:
-          ha-control-slider$: |
-            .slider .slider-track-bar {
-              border-radius: 0px !important;
-            }
-        hui-light-brightness-card-feature $:
-          ha-control-slider$: |
-            .slider .slider-track-bar {
-              border-radius: 0px !important;
-            }
+    /* Energy dashboard */
+    .mdc-data-table,
+    .mdc-data-table__row,
+    .mdc-data-table__header-cell,
+    ha-sankey-chart {
+      background: none !important;
+    }
