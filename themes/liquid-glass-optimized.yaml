@@ -1,4 +1,4 @@
-Liquid Glass:
+Liquid Glass Optimized:
   modes:
     light:
       background-image: "center / cover no-repeat fixed url('https://raw.githubusercontent.com/Nezz/homeassistant-visionos-theme/refs/heads/static/macOS_26_Light.webp')"
@@ -153,7 +153,7 @@ Liquid Glass:
   ha-color-fill-primary-quiet-resting: rgba(255, 255, 255, 0.12) # selection color
   ha-color-fill-primary-quiet-hover: rgba(255, 255, 255, 0.2) # selection hover color
 
-  card-mod-theme: "Liquid Glass"
+  card-mod-theme: "Liquid Glass Optimized"
   card-mod-drawer: |
     .mdc-drawer,
     .sidebar-shell,
