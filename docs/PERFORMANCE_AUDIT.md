@@ -40,8 +40,8 @@ instances had empty resolved styles, so the native variable remained active even
 when the theme's intended pseudo-element workaround was not applied. This makes a
 fix relying exclusively on an injected CSS override unreliable.
 
-**Fix:** set the native card filter to `none`. Use a more opaque 78% card tint to
-keep labels readable over the wallpaper. Introduce an independent
+**Fix:** set the native card filter to `none`. Keep the original 30% card tints
+and glass highlights. Introduce an independent
 `glass-chrome-backdrop-filter: blur(8px)` for the header, sidebar and open dialog.
 This keeps the small, bounded set of chrome surfaces independent of card count.
 The card change works before card-mod loads and without card-mod.
@@ -120,7 +120,23 @@ These are correctness fixes. No measurable performance gain is attributed to the
 | Security/privacy | No executable code or secrets bundled. Remote wallpapers disclose normal image-request metadata to their host. License and upstream attribution remain. |
 | Maintainability | Flat CSS replaces repeated exceptions and nested selector trees; no extra runtime or compatibility framework. |
 
-## Live validation
+## Appearance follow-up — fork 3.0.9
+
+The initial fork release, 3.0.8, used a 78% card tint. This made the cards much
+darker and less glass-like. Release 3.0.9 restores the exact upstream tint values:
+
+| Theme | Light mode | Dark mode |
+| --- | --- | --- |
+| Liquid Glass | `rgba(150, 150, 150, 0.3)` | `rgba(0, 0, 0, 0.3)` |
+| visionos | `rgba(128, 128, 128, 0.3)` | `rgba(0, 0, 0, 0.3)` |
+
+The original shadows, edge highlights, wallpaper and corner radii remain. No
+card filters, pseudo-element surfaces or selector searches are reintroduced.
+This restores the original transparency and brightness, not the live frosting:
+details behind cards remain sharper than with the original blur. It does not
+claim pixel-identical rendering or a new measured frame-rate improvement.
+
+## Live validation — initial fork 3.0.8
 
 Client: desktop Chrome, macOS, viewport 1486 × 963 CSS pixels, device pixel ratio 2.
 The same Sensors view, same live data and same browser were used. Theme selection
