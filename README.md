@@ -2,10 +2,11 @@
 
 Theme inspired by visionOS for Home Assistant with automatic dark mode support.
 
-The performance defaults keep the wallpapers, colors and rounded surfaces, but
-use tinted cards instead of a live blur behind every card. The header, sidebar
-and dialogs retain a small blur. The screenshots below show the original
-full-blur appearance; current cards have a stronger tint.
+The performance defaults keep the original wallpapers, 30% card tints, glass
+highlights and rounded surfaces. Cards stay transparent without running a live
+blur behind every card. The header, sidebar and dialogs retain a small blur.
+The screenshots below show the original full-blur appearance; the wallpaper
+behind current cards is sharper because per-card frosting is disabled.
 
 See the [full performance audit](docs/PERFORMANCE_AUDIT.md) for findings,
 measurements, tradeoffs and limitations.
@@ -65,6 +66,8 @@ action:
 
 - Native cards no longer create a backdrop filter by default. This also covers
   cards before the styling injector loads and cards that it does not support.
+- Card colors and 30% opacity match the original themes in both light and dark
+  mode. The earlier performance patch's heavy 78% tint has been removed.
 - No extra `ha-card::before` blur layer or duplicate shadow is added.
 - Liquid Glass uses native slider shapes instead of searching inside every card
   for five possible slider types. Sliders keep their normal actions.
@@ -76,10 +79,10 @@ action:
   duplicate loading. Changing `extra_module_url` requires a Home Assistant restart;
   changing these theme files only requires `frontend.reload_themes` and a browser refresh.
 
-For an optional full-blur look, set `ha-card-backdrop-filter: blur(8px)` and reduce
-`ha-card-background` opacity in each mode. This restores the per-card rendering
-cost and native backdrop stacking behavior, so it is not recommended on devices
-that stall with the original theme.
+For optional live frosting, set `ha-card-backdrop-filter` to `blur(8px)` for
+Liquid Glass or `blur(20px)` for visionos, matching each original theme's radius.
+This restores the per-card rendering cost and native backdrop stacking behavior,
+so it is not recommended on devices that stall with the original theme.
 
 Wallpapers are hosted remotely. To use your own local images, place them under
 `/config/www/` and set the `background-image` value in each mode, for example:
